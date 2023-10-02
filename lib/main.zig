@@ -11,21 +11,21 @@ usingnamespace worker;
 // ** EXPORTS **
 
 // ALLOCATION
-pub export fn alloc (size: usize) ?[*]u8 {
+pub export fn alloc(size: usize) ?[*]u8 {
     const data = allocator.alloc(u8, size) catch return null;
     return data.ptr;
 }
-pub export fn allocSentinel (size: usize) ?[*:0]u8 {
+pub export fn allocSentinel(size: usize) ?[*:0]u8 {
     const data = allocator.allocSentinel(u8, size, 0) catch return null;
     return data.ptr;
 }
-pub export fn free (ptr: [*]u8) void {
+pub export fn free(ptr: [*]u8) void {
     allocator.destroy(ptr);
 }
 
 // FUNCTION / ASYNC FUNCTION
-pub export fn wasmResume (frame: *anyopaque) callconv(.C) void {
-    resume @ptrCast(anyframe, @alignCast(4, frame));
+pub export fn wasmResume(frame: *anyopaque) callconv(.C) void {
+    resume @as(*align(4) anyframe, @alignCast(frame));
 }
 
 // ? PART 1
