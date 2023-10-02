@@ -18,11 +18,11 @@ const MetaTest = struct {
     input: u32 = 0,
 };
 
-pub fn r2StreamHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2StreamHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -32,11 +32,11 @@ pub fn r2StreamHandler (ctx: *FetchContext) callconv(.Async) void {
     const getRes = r2.get("key", .{});
     defer getRes.free();
     const stream = switch (getRes) {
-      .r2objectBody => |bod| bod.body(),
-      else => {
-        ctx.throw(500, "Could not get body");
-        return {};
-      }
+        .r2objectBody => |bod| bod.body(),
+        else => {
+            ctx.throw(500, "Could not get body");
+            return {};
+        },
     };
     defer stream.free();
     // headers
@@ -44,20 +44,17 @@ pub fn r2StreamHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .stream = &stream },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .stream = &stream }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2TextHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2TextHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -67,31 +64,28 @@ pub fn r2TextHandler (ctx: *FetchContext) callconv(.Async) void {
     const getRes = r2.get("key", .{});
     defer getRes.free();
     const text = switch (getRes) {
-      .r2objectBody => |bod| bod.text(),
-      else => {
-        ctx.throw(500, "Could not get body");
-        return {};
-      },
+        .r2objectBody => |bod| bod.text(),
+        else => {
+            ctx.throw(500, "Could not get body");
+            return {};
+        },
     };
     // headers
     const headers = Headers.new();
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .text = text },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .text = text }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2StringHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2StringHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -103,11 +97,11 @@ pub fn r2StringHandler (ctx: *FetchContext) callconv(.Async) void {
     const getRes = r2.get("key", .{});
     defer getRes.free();
     const string = switch (getRes) {
-      .r2objectBody => |bod| bod.string(),
-      else => {
-        ctx.throw(500, "Could not get body");
-        return {};
-      },
+        .r2objectBody => |bod| bod.string(),
+        else => {
+            ctx.throw(500, "Could not get body");
+            return {};
+        },
     };
     defer string.free();
     // headers
@@ -115,24 +109,21 @@ pub fn r2StringHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .string = &string },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .string = &string }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2ArrayBufferHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2ArrayBufferHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
-    const bytes = [_]u8{ 0, 1, 2, 3};
+    const bytes = [_]u8{ 0, 1, 2, 3 };
     const ab = ArrayBuffer.new(bytes[0..]);
     defer ab.free();
     const putRes = r2.put("key", .{ .arrayBuffer = &ab }, .{});
@@ -141,11 +132,11 @@ pub fn r2ArrayBufferHandler (ctx: *FetchContext) callconv(.Async) void {
     const getRes = r2.get("key", .{});
     defer getRes.free();
     const resAB = switch (getRes) {
-      .r2objectBody => |bod| bod.arrayBuffer(),
-      else => {
-        ctx.throw(500, "Could not get body");
-        return {};
-      },
+        .r2objectBody => |bod| bod.arrayBuffer(),
+        else => {
+            ctx.throw(500, "Could not get body");
+            return {};
+        },
     };
     defer resAB.free();
     // headers
@@ -153,35 +144,32 @@ pub fn r2ArrayBufferHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .arrayBuffer = &resAB },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .arrayBuffer = &resAB }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2BytesHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2BytesHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
-    const bytes = [_]u8{ 0, 1, 2, 3};
+    const bytes = [_]u8{ 0, 1, 2, 3 };
     const putRes = r2.put("key", .{ .bytes = bytes[0..] }, .{});
     defer putRes.free();
     // get
     const getRes = r2.get("key", .{});
     defer getRes.free();
     const resBytes = switch (getRes) {
-      .r2objectBody => |bod| bod.bytes(),
-      else => {
-        ctx.throw(500, "Could not get body");
-        return {};
-      },
+        .r2objectBody => |bod| bod.bytes(),
+        else => {
+            ctx.throw(500, "Could not get body");
+            return {};
+        },
     };
     defer allocator.free(resBytes);
     // headers
@@ -189,10 +177,7 @@ pub fn r2BytesHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .bytes = resBytes },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .bytes = resBytes }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
@@ -202,7 +187,7 @@ const TestObj = struct {
     a: u32,
     b: []const u8,
 
-    pub fn toObject (self: *const TestObj) Object {
+    pub fn toObject(self: *const TestObj) Object {
         const obj = Object.new();
         obj.setNum("a", u32, self.a);
         obj.setText("b", self.b);
@@ -211,11 +196,11 @@ const TestObj = struct {
     }
 };
 
-pub fn r2ObjectHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2ObjectHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -228,11 +213,11 @@ pub fn r2ObjectHandler (ctx: *FetchContext) callconv(.Async) void {
     const getRes = r2.get("key", .{});
     defer getRes.free();
     const resObject = switch (getRes) {
-      .r2objectBody => |bod| bod.object(),
-      else => {
-        ctx.throw(500, "Could not get body");
-        return {};
-      },
+        .r2objectBody => |bod| bod.object(),
+        else => {
+            ctx.throw(500, "Could not get body");
+            return {};
+        },
     };
     defer resObject.free();
     // headers
@@ -240,20 +225,17 @@ pub fn r2ObjectHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .object = &resObject },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .object = &resObject }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2JSONHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2JSONHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -266,11 +248,11 @@ pub fn r2JSONHandler (ctx: *FetchContext) callconv(.Async) void {
     const getRes = r2.get("key", .{});
     defer getRes.free();
     const resJSON = switch (getRes) {
-      .r2objectBody => |bod| bod.json(TestObj),
-      else => {
-        ctx.throw(500, "Could not get body");
-        return {};
-      },
+        .r2objectBody => |bod| bod.json(TestObj),
+        else => {
+            ctx.throw(500, "Could not get body");
+            return {};
+        },
     };
     defer std.json.parseFree(TestObj, resJSON.?, .{ .allocator = allocator });
     const resObject = resJSON.?.toObject();
@@ -280,20 +262,17 @@ pub fn r2JSONHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .object = &resObject },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .object = &resObject }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2HeadHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2HeadHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -310,20 +289,17 @@ pub fn r2HeadHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .objectID = headRes.id },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .objectID = headRes.id }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2DeleteHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2DeleteHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -335,28 +311,25 @@ pub fn r2DeleteHandler (ctx: *FetchContext) callconv(.Async) void {
     const getRes = r2.get("key", .{});
     defer getRes.free();
     const text = switch (getRes) {
-      .r2objectBody => |bod| bod.text(),
-      else => "value deleted",
+        .r2objectBody => |bod| bod.text(),
+        else => "value deleted",
     };
     // headers
     const headers = Headers.new();
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .text = text },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .text = text }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2ListHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2ListHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -389,8 +362,8 @@ pub fn r2ListHandler (ctx: *FetchContext) callconv(.Async) void {
     const prefixes = Array.new();
     defer prefixes.free();
     while (delimitedPrefixes.next()) |delimitedPrefix| {
-      defer delimitedPrefix.free();
-      prefixes.push(delimitedPrefix);
+        defer delimitedPrefix.free();
+        prefixes.push(delimitedPrefix);
     }
     obj.set("delimitedPrefixes", prefixes);
     // objects
@@ -399,8 +372,8 @@ pub fn r2ListHandler (ctx: *FetchContext) callconv(.Async) void {
     const objRes = Array.new();
     defer objRes.free();
     while (objects.next()) |object| {
-      defer object.free();
-      objRes.push(object);
+        defer object.free();
+        objRes.push(object);
     }
     obj.set("objects", objRes);
 
@@ -409,20 +382,17 @@ pub fn r2ListHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .object = &obj },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .object = &obj }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2R2ObjectHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2R2ObjectHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -469,9 +439,9 @@ pub fn r2R2ObjectHandler (ctx: *FetchContext) callconv(.Async) void {
     // range
     const range = r2object.range();
     if (range) |r| {
-      const rangeObj = r.toObject();
-      defer rangeObj.free();
-      obj.set("range", rangeObj);
+        const rangeObj = r.toObject();
+        defer rangeObj.free();
+        obj.set("range", rangeObj);
     }
 
     // headers
@@ -480,20 +450,17 @@ pub fn r2R2ObjectHandler (ctx: *FetchContext) callconv(.Async) void {
     headers.setText("Content-Type", "text/plain");
     r2object.writeHttpMetadata(headers);
     // response
-    const res = Response.new(
-        .{ .object = &obj },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .object = &obj }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn r2R2ObjectBodyHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn r2R2ObjectBodyHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the r2Bucket from env
     const r2 = ctx.env.r2("TEST_BUCKET") orelse {
-      ctx.throw(500, "Could not find \"TEST_BUCKET\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_BUCKET\"");
+        return;
     };
     defer r2.free();
     // put
@@ -503,11 +470,11 @@ pub fn r2R2ObjectBodyHandler (ctx: *FetchContext) callconv(.Async) void {
     const getRes = r2.get("key", .{ .range = .{ .offset = 2 } });
     defer getRes.free();
     const r2ObjectBody = switch (getRes) {
-      .r2objectBody => |bod| bod,
-      else => {
-        ctx.throw(500, "Could not get body");
-        return {};
-      },
+        .r2objectBody => |bod| bod,
+        else => {
+            ctx.throw(500, "Could not get body");
+            return {};
+        },
     };
     // build object
     const obj = Object.new();
@@ -547,9 +514,9 @@ pub fn r2R2ObjectBodyHandler (ctx: *FetchContext) callconv(.Async) void {
     // range
     const range = r2ObjectBody.range();
     if (range) |r| {
-      const rangeObj = r.toObject();
-      defer rangeObj.free();
-      obj.set("range", rangeObj);
+        const rangeObj = r.toObject();
+        defer rangeObj.free();
+        obj.set("range", rangeObj);
     }
 
     // headers
@@ -558,10 +525,7 @@ pub fn r2R2ObjectBodyHandler (ctx: *FetchContext) callconv(.Async) void {
     headers.setText("Content-Type", "text/plain");
     r2ObjectBody.writeHttpMetadata(headers);
     // response
-    const res = Response.new(
-        .{ .object = &obj },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .object = &obj }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);

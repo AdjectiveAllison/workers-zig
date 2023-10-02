@@ -7,7 +7,7 @@ const Headers = worker.Headers;
 const Cache = worker.Cache;
 const Method = worker.Method;
 
-pub fn cacheTextHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn cacheTextHandler(ctx: *FetchContext) callconv(.Async) void {
     const url = "http://localhost/cacheTest";
     // get the kvinstance from env
     const cache = Cache.new(.none);
@@ -17,10 +17,7 @@ pub fn cacheTextHandler (ctx: *FetchContext) callconv(.Async) void {
     defer cacheHeaders.free();
     cacheHeaders.setText("Cache-Control", "max-age=3600");
     cacheHeaders.setText("Content-Type", "text/plain");
-    const cacheRes = Response.new(
-      .{ .text = "cached response" },
-      .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders }
-    );
+    const cacheRes = Response.new(.{ .text = "cached response" }, .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders });
     defer cacheRes.free();
     cache.put(.{ .text = url }, &cacheRes);
     // response
@@ -30,7 +27,7 @@ pub fn cacheTextHandler (ctx: *FetchContext) callconv(.Async) void {
     ctx.send(&res);
 }
 
-pub fn cacheStringHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn cacheStringHandler(ctx: *FetchContext) callconv(.Async) void {
     const string = String.new("http://localhost/cacheTest");
     defer string.free();
     // get the kvinstance from env
@@ -41,10 +38,7 @@ pub fn cacheStringHandler (ctx: *FetchContext) callconv(.Async) void {
     defer cacheHeaders.free();
     cacheHeaders.setText("Cache-Control", "max-age=3600");
     cacheHeaders.setText("Content-Type", "text/plain");
-    const cacheRes = Response.new(
-      .{ .text = "cached response" },
-      .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders }
-    );
+    const cacheRes = Response.new(.{ .text = "cached response" }, .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders });
     defer cacheRes.free();
     cache.put(.{ .string = &string }, &cacheRes);
     // response
@@ -54,7 +48,7 @@ pub fn cacheStringHandler (ctx: *FetchContext) callconv(.Async) void {
     ctx.send(&res);
 }
 
-pub fn cacheUniqueHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn cacheUniqueHandler(ctx: *FetchContext) callconv(.Async) void {
     const url = "http://localhost/cacheTest";
     // get the kvinstance from env
     const cache = Cache.new(.{ .text = "newcache" });
@@ -64,10 +58,7 @@ pub fn cacheUniqueHandler (ctx: *FetchContext) callconv(.Async) void {
     defer cacheHeaders.free();
     cacheHeaders.setText("Cache-Control", "max-age=3600");
     cacheHeaders.setText("Content-Type", "text/plain");
-    const cacheRes = Response.new(
-      .{ .text = "cached response" },
-      .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders }
-    );
+    const cacheRes = Response.new(.{ .text = "cached response" }, .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders });
     defer cacheRes.free();
     cache.put(.{ .text = url }, &cacheRes);
     // response
@@ -77,7 +68,7 @@ pub fn cacheUniqueHandler (ctx: *FetchContext) callconv(.Async) void {
     ctx.send(&res);
 }
 
-pub fn cacheDeleteHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn cacheDeleteHandler(ctx: *FetchContext) callconv(.Async) void {
     const url = "http://localhost/cacheTest";
     // get the kvinstance from env
     const cache = Cache.new(.none);
@@ -87,32 +78,26 @@ pub fn cacheDeleteHandler (ctx: *FetchContext) callconv(.Async) void {
     defer cacheHeaders.free();
     cacheHeaders.setText("Cache-Control", "max-age=3600");
     cacheHeaders.setText("Content-Type", "text/plain");
-    const cacheRes = Response.new(
-      .{ .text = "cached response" },
-      .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders }
-    );
+    const cacheRes = Response.new(.{ .text = "cached response" }, .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders });
     defer cacheRes.free();
     cache.put(.{ .text = url }, &cacheRes);
     _ = cache.delete(.{ .text = url }, .{});
     // response
-    const res = cache.match(.{ .text = url }, .{}) orelse Response.new(
-      .{ .text = "deleted cached response" },
-      .{ .status = 200, .statusText = "ok" }
-    );
+    const res = cache.match(.{ .text = url }, .{}) orelse Response.new(.{ .text = "deleted cached response" }, .{ .status = 200, .statusText = "ok" });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn cacheIgnoreTextHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn cacheIgnoreTextHandler(ctx: *FetchContext) callconv(.Async) void {
     const url = "http://localhost/cacheTest";
     // get the kvinstance from env
     const cache = Cache.new(.none);
     defer cache.free();
     // prep request
     const matchReq = Request.new(
-      .{ .text = url },
-      .{ .requestInit = .{ .method = Method.Put } },
+        .{ .text = url },
+        .{ .requestInit = .{ .method = Method.Put } },
     );
     defer matchReq.free();
     // store the request with cache control headers
@@ -120,10 +105,7 @@ pub fn cacheIgnoreTextHandler (ctx: *FetchContext) callconv(.Async) void {
     defer cacheHeaders.free();
     cacheHeaders.setText("Cache-Control", "max-age=3600");
     cacheHeaders.setText("Content-Type", "text/plain");
-    const cacheRes = Response.new(
-      .{ .text = "cached response" },
-      .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders }
-    );
+    const cacheRes = Response.new(.{ .text = "cached response" }, .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders });
     defer cacheRes.free();
     cache.put(.{ .text = url }, &cacheRes);
     // response
@@ -133,15 +115,15 @@ pub fn cacheIgnoreTextHandler (ctx: *FetchContext) callconv(.Async) void {
     ctx.send(&res);
 }
 
-pub fn cacheIgnoreDeleteHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn cacheIgnoreDeleteHandler(ctx: *FetchContext) callconv(.Async) void {
     const url = "http://localhost/cacheTest";
     // get the kvinstance from env
     const cache = Cache.new(.none);
     defer cache.free();
     // prep request
     const matchReq = Request.new(
-      .{ .text = url },
-      .{ .requestInit = .{ .method = Method.Put } },
+        .{ .text = url },
+        .{ .requestInit = .{ .method = Method.Put } },
     );
     defer matchReq.free();
     // store the request with cache control headers
@@ -149,18 +131,12 @@ pub fn cacheIgnoreDeleteHandler (ctx: *FetchContext) callconv(.Async) void {
     defer cacheHeaders.free();
     cacheHeaders.setText("Cache-Control", "max-age=3600");
     cacheHeaders.setText("Content-Type", "text/plain");
-    const cacheRes = Response.new(
-      .{ .text = "cached response" },
-      .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders }
-    );
+    const cacheRes = Response.new(.{ .text = "cached response" }, .{ .status = 200, .statusText = "ok", .headers = &cacheHeaders });
     defer cacheRes.free();
     cache.put(.{ .text = url }, &cacheRes);
     _ = cache.delete(.{ .request = &matchReq }, .{ .ignoreMethod = true });
     // response
-    const res = cache.match(.{ .text = url }, .{}) orelse Response.new(
-      .{ .text = "deleted cached response" },
-      .{ .status = 200, .statusText = "ok" }
-    );
+    const res = cache.match(.{ .text = url }, .{}) orelse Response.new(.{ .text = "deleted cached response" }, .{ .status = 200, .statusText = "ok" });
     defer res.free();
 
     ctx.send(&res);

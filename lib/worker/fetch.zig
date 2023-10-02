@@ -16,68 +16,56 @@ const getObjectValue = @import("../bindings/object.zig").getObjectValue;
 pub const HandlerFn = fn (ctx: *FetchContext) callconv(.Async) void;
 
 pub const Route = struct {
-  path: []const u8,
-  method: ?Method = null,
-  handle: HandlerFn,
+    path: []const u8,
+    method: ?Method = null,
+    handle: HandlerFn,
 };
 
 pub const FetchContext = struct {
-  id: u32,
-  req: Request,
-  env: Env,
-  exeContext: ExecutionContext,
-  path: []const u8,
+    id: u32,
+    req: Request,
+    env: Env,
+    exeContext: ExecutionContext,
+    path: []const u8,
 
-  frame: *anyframe,
+    frame: *anyframe,
 
-  pub fn init(
-    id: u32
-  ) !*FetchContext {
-    var ctx = try allocator.create(FetchContext);
-    errdefer allocator.destroy(ctx);
+    pub fn init(id: u32) !*FetchContext {
+        var ctx = try allocator.create(FetchContext);
+        errdefer allocator.destroy(ctx);
 
-    ctx.* = .{
-      .id = id,
-      .req = Request.init(getObjectValue(id, "req")),
-      .env = Env.init(getObjectValue(id, "env")),
-      .exeContext = ExecutionContext.init(getObjectValue(id, "ctx")),
-      .path = getStringFree(getObjectValue(id, "path")),
-      .frame = undefined
-    };
+        ctx.* = .{ .id = id, .req = Request.init(getObjectValue(id, "req")), .env = Env.init(getObjectValue(id, "env")), .exeContext = ExecutionContext.init(getObjectValue(id, "ctx")), .path = getStringFree(getObjectValue(id, "path")), .frame = undefined };
 
-    return ctx;
-  }
+        return ctx;
+    }
 
-  pub fn deinit (self: *FetchContext) void {
-    self.req.free();
-    self.env.free();
-    self.exeContext.free();
-    jsFree(self.id);
-    allocator.destroy(self.frame);
-    allocator.destroy(self);
-  }
+    pub fn deinit(self: *FetchContext) void {
+        self.req.free();
+        self.env.free();
+        self.exeContext.free();
+        jsFree(self.id);
+        allocator.destroy(self.frame);
+        allocator.destroy(self);
+    }
 
-  pub fn throw (self: *FetchContext, status: u16, msg: []const u8) void {
-    const statusText = @intToEnum(StatusCode, status).toString();
+    pub fn throw(self: *FetchContext, status: u16, msg: []const u8) void {
+        const statusText = @as(StatusCode, @enumFromInt(status)).toString();
 
-    // body
-    const body = String.new(msg);
-    defer body.free();
-    // response
-    const res = Response.new(
-        .{ .string = &body },
-        .{ .status = status, .statusText = statusText }
-    );
-    defer res.free();
+        // body
+        const body = String.new(msg);
+        defer body.free();
+        // response
+        const res = Response.new(.{ .string = &body }, .{ .status = status, .statusText = statusText });
+        defer res.free();
 
-    self.send(&res);
-  }
+        self.send(&res);
+    }
 
-  pub fn send (self: *FetchContext, res: *const Response) void {
-    defer self.deinit();
-    // call the resolver.
-    jsResolve(self.id, res.id);
-  }
+    pub fn send(self: *FetchContext, res: *const Response) void {
+        defer self.deinit();
+        // call the resolver.
+        jsResolve(self.id, res.id);
+    }
 };
 
 // pub const Router = struct {
@@ -118,53 +106,53 @@ pub const FetchContext = struct {
 // };
 
 pub fn createRoute(method: Method, path: []const u8, handler: HandlerFn) Route {
-  return Route{
-    .path = path,
-    .method = method,
-    .handle = handler,
-  };
+    return Route{
+        .path = path,
+        .method = method,
+        .handle = handler,
+    };
 }
 
-pub fn all (path: []const u8, handler: HandlerFn) Route {
+pub fn all(path: []const u8, handler: HandlerFn) Route {
     return createRoute(null, path, handler);
 }
 
-pub fn get (path: []const u8, handler: HandlerFn) Route {
+pub fn get(path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.Get, path, handler);
 }
 
-pub fn head (path: []const u8, handler: HandlerFn) Route {
+pub fn head(path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.Head, path, handler);
 }
 
-pub fn post (path: []const u8, handler: HandlerFn) Route {
+pub fn post(path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.Post, path, handler);
 }
 
-pub fn put (path: []const u8, handler: HandlerFn) Route {
+pub fn put(path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.Put, path, handler);
 }
 
-pub fn delete (path: []const u8, handler: HandlerFn) Route {
+pub fn delete(path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.Delete, path, handler);
 }
 
-pub fn connect (path: []const u8, handler: HandlerFn) Route {
+pub fn connect(path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.Connect, path, handler);
 }
 
-pub fn options (path: []const u8, handler: HandlerFn) Route {
+pub fn options(path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.Options, path, handler);
 }
 
-pub fn trace (path: []const u8, handler: HandlerFn) Route {
+pub fn trace(path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.Trace, path, handler);
 }
 
-pub fn patch (path: []const u8, handler: HandlerFn) Route {
+pub fn patch(path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.Patch, path, handler);
 }
 
-pub fn custom (method: []const u8, path: []const u8, handler: HandlerFn) Route {
+pub fn custom(method: []const u8, path: []const u8, handler: HandlerFn) Route {
     return createRoute(Method.fromString(method), path, handler);
 }

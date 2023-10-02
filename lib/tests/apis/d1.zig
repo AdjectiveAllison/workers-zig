@@ -19,11 +19,11 @@ const Customer = struct {
     ContactName: ?[]const u8 = null,
 };
 
-pub fn d1FirstHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn d1FirstHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the kvinstance from env
     const db = ctx.env.d1("TEST_DB") orelse {
-      ctx.throw(500, "Could not find \"TEST_DB\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_DB\"");
+        return;
     };
     defer db.free();
 
@@ -41,20 +41,17 @@ pub fn d1FirstHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .object = &first },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .object = &first }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn d1AllHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn d1AllHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the kvinstance from env
     const db = ctx.env.d1("TEST_DB") orelse {
-      ctx.throw(500, "Could not find \"TEST_DB\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_DB\"");
+        return;
     };
     defer db.free();
 
@@ -72,20 +69,17 @@ pub fn d1AllHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .objectID = all.id },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .objectID = all.id }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn d1RawHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn d1RawHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the kvinstance from env
     const db = ctx.env.d1("TEST_DB") orelse {
-      ctx.throw(500, "Could not find \"TEST_DB\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_DB\"");
+        return;
     };
     defer db.free();
 
@@ -100,20 +94,17 @@ pub fn d1RawHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .objectID = raw.id },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .objectID = raw.id }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn d1RunHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn d1RunHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the kvinstance from env
     const db = ctx.env.d1("TEST_DB") orelse {
-      ctx.throw(500, "Could not find \"TEST_DB\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_DB\"");
+        return;
     };
     defer db.free();
 
@@ -133,20 +124,17 @@ pub fn d1RunHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .objectID = run.id },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .objectID = run.id }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn d1BatchHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn d1BatchHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the kvinstance from env
     const db = ctx.env.d1("TEST_DB") orelse {
-      ctx.throw(500, "Could not find \"TEST_DB\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_DB\"");
+        return;
     };
     defer db.free();
 
@@ -174,16 +162,13 @@ pub fn d1BatchHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .objectID = batch.id },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .objectID = batch.id }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);
 }
 
-pub fn createCustomer (id: u8, name: []const u8, contact: []const u8) Array {
+pub fn createCustomer(id: u8, name: []const u8, contact: []const u8) Array {
     const args = Array.new();
     args.pushNum(u8, id);
     args.pushText(name);
@@ -192,11 +177,11 @@ pub fn createCustomer (id: u8, name: []const u8, contact: []const u8) Array {
     return args;
 }
 
-pub fn d1ExecHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn d1ExecHandler(ctx: *FetchContext) callconv(.Async) void {
     // get the kvinstance from env
     const db = ctx.env.d1("TEST_DB") orelse {
-      ctx.throw(500, "Could not find \"TEST_DB\"");
-      return;
+        ctx.throw(500, "Could not find \"TEST_DB\"");
+        return;
     };
     defer db.free();
 
@@ -208,10 +193,7 @@ pub fn d1ExecHandler (ctx: *FetchContext) callconv(.Async) void {
     defer headers.free();
     headers.setText("Content-Type", "text/plain");
     // response
-    const res = Response.new(
-        .{ .object = &exec },
-        .{ .status = 200, .statusText = "ok", .headers = &headers }
-    );
+    const res = Response.new(.{ .object = &exec }, .{ .status = 200, .statusText = "ok", .headers = &headers });
     defer res.free();
 
     ctx.send(&res);

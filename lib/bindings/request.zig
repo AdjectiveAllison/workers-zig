@@ -25,234 +25,234 @@ const Blob = @import("blob.zig").Blob;
 const getObjectValue = @import("object.zig").getObjectValue;
 
 pub const Redirect = enum {
-  Follow,
-  Error,
-  Manual,
+    Follow,
+    Error,
+    Manual,
 
-  const redirects = [_][]const u8 {
-    "follow",
-    "error",
-    "manual",
-  };
+    const redirects = [_][]const u8{
+        "follow",
+        "error",
+        "manual",
+    };
 
-  pub fn toString(self: *const Redirect) []const u8 {
-    return redirects[@enumToInt(self.*)];
-  }
-
-  pub fn fromString(str: []const u8) !Redirect {
-    for (redirects) |v, i| {
-      if (mem.eql(u8, v, str)) {
-        return @intToEnum(Redirect, @truncate(u3, i));
-      }
+    pub fn toString(self: *const Redirect) []const u8 {
+        return redirects[@intFromEnum(self.*)];
     }
-    return error.Unsupported;
-  }
+
+    pub fn fromString(str: []const u8) !Redirect {
+        for (redirects, 0..) |v, i| {
+            if (mem.eql(u8, v, str)) {
+                return @as(Redirect, @enumFromInt(@as(u3, @truncate(i))));
+            }
+        }
+        return error.Unsupported;
+    }
 };
 
 // https://developers.cloudflare.com/workers/runtime-apis/request#requestinit
 // https://github.com/cloudflare/workers-types/blob/master/index.d.ts#L1260
 pub const RequestInit = struct {
-  body: ?BodyInit = null, // can be empty
-  method: ?Method = null,
-  headers: ?Headers = null,
-  redirect: ?Redirect = null,
-  cf: ?Cf.CfRequestInit = null,
+    body: ?BodyInit = null, // can be empty
+    method: ?Method = null,
+    headers: ?Headers = null,
+    redirect: ?Redirect = null,
+    cf: ?Cf.CfRequestInit = null,
 
-  pub fn toObject (self: *const RequestInit) Object {
-    const obj = Object.new();
-    var body = self.body orelse BodyInit{ .none = {} };
-    const bodyID = body.toID();
-    defer body.free(bodyID);
-    if (bodyID != Null) obj.setID("body", bodyID);
-    if (self.method != null) obj.setText("method", self.method.?.toString());
-    if (self.headers != null) obj.set("headers", &self.headers.?);
-    if (self.redirect != null) obj.setText("redirect", self.redirect.?.toString());
-    if (self.cf != null) {
-      const cfID = self.cf.?.toID();
-      if (cfID != Null) obj.setID("cf", cfID);
+    pub fn toObject(self: *const RequestInit) Object {
+        const obj = Object.new();
+        var body = self.body orelse BodyInit{ .none = {} };
+        const bodyID = body.toID();
+        defer body.free(bodyID);
+        if (bodyID != Null) obj.setID("body", bodyID);
+        if (self.method != null) obj.setText("method", self.method.?.toString());
+        if (self.headers != null) obj.set("headers", &self.headers.?);
+        if (self.redirect != null) obj.setText("redirect", self.redirect.?.toString());
+        if (self.cf != null) {
+            const cfID = self.cf.?.toID();
+            if (cfID != Null) obj.setID("cf", cfID);
+        }
+
+        return obj;
     }
-
-    return obj;
-  }
 };
 
 pub const RequestInfo = union(enum) {
-  text: []const u8,
-  string: *const String,
-  request: *const Request,
+    text: []const u8,
+    string: *const String,
+    request: *const Request,
 
-  // NOTE: Since the option may be a string, be sure to `defer reqInfo.free(id)`
-  pub fn toID (self: *const RequestInfo) u32 {
-    switch (self.*) {
-      .text => |t| return String.new(t).id,
-      .string => |s| return s.id,
-      .request => |req| return req.id,
+    // NOTE: Since the option may be a string, be sure to `defer reqInfo.free(id)`
+    pub fn toID(self: *const RequestInfo) u32 {
+        switch (self.*) {
+            .text => |t| return String.new(t).id,
+            .string => |s| return s.id,
+            .request => |req| return req.id,
+        }
     }
-  }
 
-  pub fn free (self: *const RequestInfo, id: u32) void {
-    switch (self.*) {
-      .text => jsFree(id),
-      else => {},
+    pub fn free(self: *const RequestInfo, id: u32) void {
+        switch (self.*) {
+            .text => jsFree(id),
+            else => {},
+        }
     }
-  }
 };
 
 pub const RequestOptions = union(enum) {
-  requestInit: RequestInit,
-  request: *const Request,
-  none,
+    requestInit: RequestInit,
+    request: *const Request,
+    none,
 
-  pub fn toID (self: *const RequestOptions) u32 {
-    switch (self.*) {
-      .requestInit => |*ri| return ri.toObject().id,
-      .request => |req| return req.id,
-      .none => return Undefined,
+    pub fn toID(self: *const RequestOptions) u32 {
+        switch (self.*) {
+            .requestInit => |*ri| return ri.toObject().id,
+            .request => |req| return req.id,
+            .none => return Undefined,
+        }
     }
-  }
 
-  pub fn free (self: *const RequestOptions, id: u32) void {
-    switch (self.*) {
-      .requestInit => jsFree(id),
-      else => {},
+    pub fn free(self: *const RequestOptions, id: u32) void {
+        switch (self.*) {
+            .requestInit => jsFree(id),
+            else => {},
+        }
     }
-  }
 };
 
 // https://github.com/cloudflare/workers-types/blob/master/index.d.ts#L1248
 pub const Request = struct {
-  // where in memory this Object is located
-  id: u32,
+    // where in memory this Object is located
+    id: u32,
 
-  // ** BUILD **
+    // ** BUILD **
 
-  pub fn init (ptr: u32) Request {
-    return Request{ .id = ptr };
-  }
+    pub fn init(ptr: u32) Request {
+        return Request{ .id = ptr };
+    }
 
-  pub fn new (reqInfo: RequestInfo, reqInit: RequestOptions) Request {
-    // prepare arguments
-    const reqID = reqInfo.toID();
-    defer reqInfo.free(reqID);
-    const reqInitID = reqInit.toID();
-    defer reqInit.free(reqInitID);
+    pub fn new(reqInfo: RequestInfo, reqInit: RequestOptions) Request {
+        // prepare arguments
+        const reqID = reqInfo.toID();
+        defer reqInfo.free(reqID);
+        const reqInitID = reqInit.toID();
+        defer reqInit.free(reqInitID);
 
-    // setup arg array
-    const args = Array.new();
-    defer args.free();
-    args.pushID(reqID);
-    args.pushID(reqInitID);
-    
-    return Request{ .id = jsCreateClass(Classes.Request.toInt(), args.id) };
-  }
+        // setup arg array
+        const args = Array.new();
+        defer args.free();
+        args.pushID(reqID);
+        args.pushID(reqInitID);
 
-  pub fn free (self: *const Request) void {
-    jsFree(self.id);
-  }
+        return Request{ .id = jsCreateClass(Classes.Request.toInt(), args.id) };
+    }
 
-  pub fn clone (self: *const Request) Request {
-    // grab the clone function
-    const func = Function.init(getObjectValue(self.id, "clone"));
-    defer func.free();
-    // call the clone function and return the resultant pointer
-    return Request.init(func.call());
-  }
+    pub fn free(self: *const Request) void {
+        jsFree(self.id);
+    }
 
-  // ** VARS **
+    pub fn clone(self: *const Request) Request {
+        // grab the clone function
+        const func = Function.init(getObjectValue(self.id, "clone"));
+        defer func.free();
+        // call the clone function and return the resultant pointer
+        return Request.init(func.call());
+    }
 
-  pub fn method (self: *const Request) Method {
-    // grab the method var
-    const methodStr = String.init(getObjectValue(self.id, "method"));
-    defer methodStr.free();
-    const str = methodStr.value();
-    defer allocator.free(str);
-    // return the method
-    return Method.fromString(str);
-  }
+    // ** VARS **
 
-  // NOTE: the returned string is a pointer to a string in memory that must be freed
-  pub fn url (self: *const Request) []const u8 {
-    // grab the url var
-    const urlStr = String.init(getObjectValue(self.id, "url"));
-    defer urlStr.free();
-    // return the url
-    return urlStr.value();
-  }
+    pub fn method(self: *const Request) Method {
+        // grab the method var
+        const methodStr = String.init(getObjectValue(self.id, "method"));
+        defer methodStr.free();
+        const str = methodStr.value();
+        defer allocator.free(str);
+        // return the method
+        return Method.fromString(str);
+    }
 
-  pub fn headers (self: *const Request) Headers {
-    return Headers.init(getObjectValue(self.id, "headers"));
-  }
+    // NOTE: the returned string is a pointer to a string in memory that must be freed
+    pub fn url(self: *const Request) []const u8 {
+        // grab the url var
+        const urlStr = String.init(getObjectValue(self.id, "url"));
+        defer urlStr.free();
+        // return the url
+        return urlStr.value();
+    }
 
-  // "follow", "error", or "manual"
-  pub fn redirect (self: *const Request) !Redirect {
-    return Redirect.fromString(getObjectValue(self.id, "redirect"));
-  }
+    pub fn headers(self: *const Request) Headers {
+        return Headers.init(getObjectValue(self.id, "headers"));
+    }
 
-  pub fn cf (self: *const Request) Cf.IncomingRequestCfProperties {
-    return Cf.IncomingRequestCfProperties.init(getObjectValue(self.id, "cf"));
-  }
+    // "follow", "error", or "manual"
+    pub fn redirect(self: *const Request) !Redirect {
+        return Redirect.fromString(getObjectValue(self.id, "redirect"));
+    }
 
-  // ** BODY **
-  // body is ReadableStream | null
+    pub fn cf(self: *const Request) Cf.IncomingRequestCfProperties {
+        return Cf.IncomingRequestCfProperties.init(getObjectValue(self.id, "cf"));
+    }
 
-  // check that body is ReadableStream
-  pub fn hasBody (self: *const Request) bool {
-    const body = getObjectValue(self.id, "body");
-    defer jsFree(body);
-    return body != Null;
-  }
+    // ** BODY **
+    // body is ReadableStream | null
 
-  pub fn bodyUsed (self: *const Request) bool {
-    const bUsed = getObjectValue(self.id, "bodyUsed");
-    return bUsed == True;
-  }
+    // check that body is ReadableStream
+    pub fn hasBody(self: *const Request) bool {
+        const body = getObjectValue(self.id, "body");
+        defer jsFree(body);
+        return body != Null;
+    }
 
-  pub fn arrayBuffer (self: *const Request) ?ArrayBuffer {
-    if (!self.hasBody()) return null;
-    const aFunc = AsyncFunction.init(getObjectValue(self.id, "arrayBuffer"));
-    defer aFunc.free();
-    return ArrayBuffer.init(aFunc.call());
-  }
+    pub fn bodyUsed(self: *const Request) bool {
+        const bUsed = getObjectValue(self.id, "bodyUsed");
+        return bUsed == True;
+    }
 
-  // NOTE: the returned string is a pointer to a string in memory that must be freed
-  pub fn text (self: *const Request) ?[]const u8 {
-    if (!self.hasBody()) return null;
-    const aFunc = AsyncFunction.init(getObjectValue(self.id, "text"));
-    defer aFunc.free();
-    const strPtr = aFunc.call();
-    if (strPtr <= DefaultValueSize) return null;
-    return getStringFree(strPtr);
-  }
+    pub fn arrayBuffer(self: *const Request) ?ArrayBuffer {
+        if (!self.hasBody()) return null;
+        const aFunc = AsyncFunction.init(getObjectValue(self.id, "arrayBuffer"));
+        defer aFunc.free();
+        return ArrayBuffer.init(aFunc.call());
+    }
 
-  pub fn json (self: *const Request, comptime T: type) ?T {
-    if (!self.hasBody()) return null;
-    // get the "string" and then parse it locally
-    var str = self.text();
-    if (str == null) return null;
-    defer allocator.free(str.?);
-    var stream = std.json.TokenStream.init(str.?);
-    return std.json.parse(T, &stream, .{}) catch return null;
-  }
+    // NOTE: the returned string is a pointer to a string in memory that must be freed
+    pub fn text(self: *const Request) ?[]const u8 {
+        if (!self.hasBody()) return null;
+        const aFunc = AsyncFunction.init(getObjectValue(self.id, "text"));
+        defer aFunc.free();
+        const strPtr = aFunc.call();
+        if (strPtr <= DefaultValueSize) return null;
+        return getStringFree(strPtr);
+    }
 
-  pub fn formData (self: *const Request) ?FormData {
-    if (!self.hasBody()) return null;
-    const aFunc = AsyncFunction.init(getObjectValue(self.id, "formData"));
-    defer aFunc.free();
-    return FormData.init(aFunc.call());
-  }
+    pub fn json(self: *const Request, comptime T: type) ?T {
+        if (!self.hasBody()) return null;
+        // get the "string" and then parse it locally
+        var str = self.text();
+        if (str == null) return null;
+        defer allocator.free(str.?);
+        var stream = std.json.TokenStream.init(str.?);
+        return std.json.parse(T, &stream, .{}) catch return null;
+    }
 
-  pub fn blob (self: *const Request) ?Blob {
-    if (!self.hasBody()) return null;
-    const aFunc = AsyncFunction.init(getObjectValue(self.id, "blob"));
-    defer aFunc.free();
-    return Blob.init(aFunc.call());
-  }
+    pub fn formData(self: *const Request) ?FormData {
+        if (!self.hasBody()) return null;
+        const aFunc = AsyncFunction.init(getObjectValue(self.id, "formData"));
+        defer aFunc.free();
+        return FormData.init(aFunc.call());
+    }
 
-  // fast track arrayBuffer->toOwned
-  pub fn bytes (self: *const Request) ?[]const u8 {
-    if (!self.hasBody()) return null;
-    const ab = self.arrayBuffer();
-    defer ab.?.free();
-    return ab.?.bytes();
-  }
+    pub fn blob(self: *const Request) ?Blob {
+        if (!self.hasBody()) return null;
+        const aFunc = AsyncFunction.init(getObjectValue(self.id, "blob"));
+        defer aFunc.free();
+        return Blob.init(aFunc.call());
+    }
+
+    // fast track arrayBuffer->toOwned
+    pub fn bytes(self: *const Request) ?[]const u8 {
+        if (!self.hasBody()) return null;
+        const ab = self.arrayBuffer();
+        defer ab.?.free();
+        return ab.?.bytes();
+    }
 };

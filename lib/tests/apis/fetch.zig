@@ -9,7 +9,7 @@ const Response = worker.Response;
 const String = worker.String;
 const Headers = worker.Headers;
 
-pub fn fetchHandler (ctx: *FetchContext) callconv(.Async) void {
+pub fn fetchHandler(ctx: *FetchContext) callconv(.Async) void {
     // fetch from local
     const localRes = fetch(.{ .text = "http://127.0.0.1:8787/kv/text" }, null);
     defer localRes.free();

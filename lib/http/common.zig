@@ -160,7 +160,7 @@ pub const Method = enum {
     Patch,
     Unknown,
 
-    const methods = [_][]const u8 {
+    const methods = [_][]const u8{
         "GET",
         "HEAD",
         "POST",
@@ -174,13 +174,13 @@ pub const Method = enum {
     };
 
     pub fn toString(self: Method) []const u8 {
-        return methods[@enumToInt(self)];
+        return methods[@intFromEnum(self)];
     }
 
     pub fn fromString(str: []const u8) Method {
-        for (methods) |v, i| {
+        for (methods, 0..) |v, i| {
             if (mem.eql(u8, v, str)) {
-                return @intToEnum(Method, @truncate(u3, i));
+                return @as(Method, @enumFromInt(@as(u3, @truncate(i))));
             }
         }
         return Method.Unknown;
@@ -194,7 +194,7 @@ pub const Version = enum {
     Http20,
     Http30,
 
-    const vers = [_][]const u8 {
+    const vers = [_][]const u8{
         "HTTP/0.9",
         "HTTP/1.0",
         "HTTP/1.1",
@@ -203,13 +203,13 @@ pub const Version = enum {
     };
 
     pub fn toString(self: *const Version) []const u8 {
-        return vers[@enumToInt(self)];
+        return vers[@intFromEnum(self)];
     }
 
     pub fn fromString(str: []const u8) !Version {
-        for (vers) |v, i| {
+        for (vers, 0..) |v, i| {
             if (mem.eql(u8, v, str)) {
-                return @intToEnum(Version, @truncate(u3, i));
+                return @as(Version, @enumFromInt(@as(u3, @truncate(i))));
             }
         }
         return error.Unsupported;

@@ -6,7 +6,7 @@ const allocator = std.heap.page_allocator;
 
 const salt: [:0]const u8 = "randomsalt";
 
-pub fn argonHashHandler (args: [][:0]const u8) []const u8 {
+pub fn argonHashHandler(args: [][:0]const u8) []const u8 {
     var password = args[0];
     // hash the password
     var buf: [128]u8 = undefined;
@@ -27,7 +27,7 @@ pub fn argonHashHandler (args: [][:0]const u8) []const u8 {
     return slice;
 }
 
-pub fn argonVerifyHandler (args: [][:0]const u8) []const u8 {
+pub fn argonVerifyHandler(args: [][:0]const u8) []const u8 {
     var password = args[0];
     var hash = args[1];
     // build password
